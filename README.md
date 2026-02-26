@@ -9,6 +9,15 @@ local MutacaoCores = {
     Galaxy  = Color3.fromRGB(160, 80, 255),
 }
 
+-- // NORMALIZAÇÃO
+local function NormalizarTexto(t)
+    t = tostring(t or "")
+    t = t:gsub("%s+", " ")
+    t = t:match("^%s*(.-)%s*$") or t
+    return t
+end
+
+-- // INVENTÁRIO
 local function GetBrainrotsDoInventario()
     local resultado = {}
     local gui = LocalPlayer:FindFirstChild("PlayerGui")
@@ -29,7 +38,7 @@ local function GetBrainrotsDoInventario()
                     local lbl = brFrame:FindFirstChild("BrainrotName")
                     if lbl and lbl:IsA("TextLabel") and lbl.Text ~= "" then
                         table.insert(resultado, {
-                            nome    = lbl.Text,
+                            nome    = NormalizarTexto(lbl.Text),
                             mutacao = mutFolder.Name,
                         })
                     end
@@ -41,15 +50,15 @@ local function GetBrainrotsDoInventario()
 end
 
 local AlvosSelecionados = {}
-local FarmAtivo = false
-local FiltroMutacao = nil
+local FarmAtivo         = false
+local FiltroMutacao     = nil
 
 -- // UI
 local sg = Instance.new("ScreenGui", (gethui and gethui()) or game:GetService("CoreGui"))
 sg.Name = "AutoFarm_Mutacao_V2"
 
 local Main = Instance.new("Frame", sg)
-Main.Size = UDim2.fromOffset(330, 0) -- altura auto via layout
+Main.Size = UDim2.fromOffset(330, 0)
 Main.AutomaticSize = Enum.AutomaticSize.Y
 Main.Position = UDim2.new(0.5, -165, 0.25, 0)
 Main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
@@ -66,37 +75,37 @@ pad.PaddingLeft   = UDim.new(0, 10)
 pad.PaddingRight  = UDim.new(0, 10)
 
 local mainLayout = Instance.new("UIListLayout", Main)
-mainLayout.FillDirection = Enum.FillDirection.Vertical
+mainLayout.FillDirection       = Enum.FillDirection.Vertical
 mainLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-mainLayout.SortOrder = Enum.SortOrder.LayoutOrder
-mainLayout.Padding = UDim.new(0, 6)
+mainLayout.SortOrder           = Enum.SortOrder.LayoutOrder
+mainLayout.Padding             = UDim.new(0, 6)
 
--- // TOPBAR (título + fechar) — fora do layout, absoluto no topo
+-- // TOPBAR
 local TopBar = Instance.new("Frame", Main)
-TopBar.Size = UDim2.new(1, 0, 0, 40)
-TopBar.Position = UDim2.new(0, 0, 0, 0)
+TopBar.Size                = UDim2.new(1, 0, 0, 40)
+TopBar.Position            = UDim2.new(0, 0, 0, 0)
 TopBar.BackgroundTransparency = 1
-TopBar.ZIndex = 10
+TopBar.ZIndex              = 10
 
 local Title = Instance.new("TextLabel", TopBar)
-Title.Size = UDim2.new(1, -44, 1, 0)
-Title.Position = UDim2.new(0, 10, 0, 0)
-Title.Text = "AUTO FARM - MUTAÇÕES"
-Title.TextColor3 = Color3.new(1,1,1)
+Title.Size                 = UDim2.new(1, -44, 1, 0)
+Title.Position             = UDim2.new(0, 10, 0, 0)
+Title.Text                 = "AUTO FARM - MUTAÇÕES"
+Title.TextColor3           = Color3.new(1,1,1)
 Title.BackgroundTransparency = 1
-Title.Font = Enum.Font.GothamBold
-Title.TextSize = 15
-Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Font                 = Enum.Font.GothamBold
+Title.TextSize             = 15
+Title.TextXAlignment       = Enum.TextXAlignment.Left
 
 local CloseBtn = Instance.new("TextButton", TopBar)
-CloseBtn.Size = UDim2.fromOffset(28, 28)
-CloseBtn.Position = UDim2.new(1, -34, 0, 6)
-CloseBtn.Text = "X"
-CloseBtn.TextColor3 = Color3.new(1,1,1)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-CloseBtn.Font = Enum.Font.GothamBold
-CloseBtn.TextSize = 13
-CloseBtn.BorderSizePixel = 0
+CloseBtn.Size              = UDim2.fromOffset(28, 28)
+CloseBtn.Position          = UDim2.new(1, -34, 0, 6)
+CloseBtn.Text              = "X"
+CloseBtn.TextColor3        = Color3.new(1,1,1)
+CloseBtn.BackgroundColor3  = Color3.fromRGB(40,40,40)
+CloseBtn.Font              = Enum.Font.GothamBold
+CloseBtn.TextSize          = 13
+CloseBtn.BorderSizePixel   = 0
 Instance.new("UICorner", CloseBtn).CornerRadius = UDim.new(0, 5)
 CloseBtn.MouseEnter:Connect(function() CloseBtn.BackgroundColor3 = Color3.fromRGB(180,30,30) end)
 CloseBtn.MouseLeave:Connect(function() CloseBtn.BackgroundColor3 = Color3.fromRGB(40,40,40) end)
@@ -114,42 +123,42 @@ end
 -- // TOGGLE
 local toggleRow = NewItem(38)
 local Toggle = Instance.new("TextButton", toggleRow)
-Toggle.Size = UDim2.new(1, 0, 1, 0)
-Toggle.Text = "AUTO FARM: OFF"
+Toggle.Size             = UDim2.new(1, 0, 1, 0)
+Toggle.Text             = "AUTO FARM: OFF"
 Toggle.BackgroundColor3 = Color3.fromRGB(35,35,35)
-Toggle.TextColor3 = Color3.new(1,1,1)
-Toggle.Font = Enum.Font.GothamBold
-Toggle.TextSize = 15
-Toggle.BorderSizePixel = 0
+Toggle.TextColor3       = Color3.new(1,1,1)
+Toggle.Font             = Enum.Font.GothamBold
+Toggle.TextSize         = 15
+Toggle.BorderSizePixel  = 0
 Instance.new("UICorner", Toggle)
 Toggle.MouseButton1Click:Connect(function()
     FarmAtivo = not FarmAtivo
-    Toggle.Text = FarmAtivo and "FARMANDO... (ON)" or "AUTO FARM: OFF"
+    Toggle.Text             = FarmAtivo and "FARMANDO... (ON)" or "AUTO FARM: OFF"
     Toggle.BackgroundColor3 = FarmAtivo and Color3.fromRGB(0,100,50) or Color3.fromRGB(35,35,35)
 end)
 
 -- // LABEL FILTRO
 local lblFiltro = Instance.new("TextLabel", NewItem(16))
-lblFiltro.Size = UDim2.new(1, 0, 1, 0)
-lblFiltro.Text = "FILTRAR POR MUTAÇÃO:"
-lblFiltro.TextColor3 = Color3.fromRGB(160,160,160)
+lblFiltro.Size               = UDim2.new(1, 0, 1, 0)
+lblFiltro.Text               = "FILTRAR POR MUTAÇÃO:"
+lblFiltro.TextColor3         = Color3.fromRGB(160,160,160)
 lblFiltro.BackgroundTransparency = 1
-lblFiltro.Font = Enum.Font.GothamBold
-lblFiltro.TextSize = 11
-lblFiltro.TextXAlignment = Enum.TextXAlignment.Left
+lblFiltro.Font               = Enum.Font.GothamBold
+lblFiltro.TextSize           = 11
+lblFiltro.TextXAlignment     = Enum.TextXAlignment.Left
 
 -- // BOTÕES MUTAÇÃO
 local mutRow = NewItem(32)
 local MutFrame = Instance.new("ScrollingFrame", mutRow)
-MutFrame.Size = UDim2.new(1, 0, 1, 0)
+MutFrame.Size               = UDim2.new(1, 0, 1, 0)
 MutFrame.BackgroundTransparency = 1
 MutFrame.ScrollBarThickness = 3
 MutFrame.ScrollingDirection = Enum.ScrollingDirection.X
-MutFrame.CanvasSize = UDim2.new(0, 380, 0, 0)
-MutFrame.BorderSizePixel = 0
+MutFrame.CanvasSize         = UDim2.new(0, 380, 0, 0)
+MutFrame.BorderSizePixel    = 0
 local mutLayout = Instance.new("UIListLayout", MutFrame)
 mutLayout.FillDirection = Enum.FillDirection.Horizontal
-mutLayout.Padding = UDim.new(0, 5)
+mutLayout.Padding       = UDim.new(0, 5)
 
 local listFrame
 local botoesMut = {}
@@ -165,7 +174,7 @@ end
 
 local function AtualizarBotoesMut()
     for key, btn in pairs(botoesMut) do
-        if key == "__todos__" then
+        if key == "todos" then
             btn.BackgroundColor3 = FiltroMutacao == nil and Color3.fromRGB(0,180,90) or Color3.fromRGB(40,40,40)
         else
             local cor = MutacaoCores[key] or Color3.fromRGB(80,80,80)
@@ -176,13 +185,13 @@ end
 
 local function MakeMutBtn(parent, label, w, onClick)
     local btn = Instance.new("TextButton", parent)
-    btn.Size = UDim2.fromOffset(w, 26)
-    btn.Text = label
-    btn.Font = Enum.Font.GothamBold
-    btn.TextSize = 10
-    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Size             = UDim2.fromOffset(w, 26)
+    btn.Text             = label
+    btn.Font             = Enum.Font.GothamBold
+    btn.TextSize         = 10
+    btn.TextColor3       = Color3.new(1,1,1)
     btn.BackgroundColor3 = Color3.fromRGB(40,40,40)
-    btn.BorderSizePixel = 0
+    btn.BorderSizePixel  = 0
     Instance.new("UICorner", btn).CornerRadius = UDim.new(0, 5)
     btn.MouseButton1Click:Connect(onClick)
     return btn
@@ -192,7 +201,7 @@ local b = MakeMutBtn(MutFrame, "TODOS", 55, function()
     FiltroMutacao = nil; AtualizarBotoesMut(); AtualizarVisLista()
 end)
 b.BackgroundColor3 = Color3.fromRGB(0,180,90)
-botoesMut["__todos__"] = b
+botoesMut["todos"] = b
 
 for mutNome, _ in pairs(MutacaoCores) do
     botoesMut[mutNome] = MakeMutBtn(MutFrame, mutNome:upper(), 70, function()
@@ -203,23 +212,23 @@ end
 -- // BOTÃO ATUALIZAR
 local refRow = NewItem(28)
 local RefreshBtn = Instance.new("TextButton", refRow)
-RefreshBtn.Size = UDim2.new(1, 0, 1, 0)
-RefreshBtn.Text = "↺  ATUALIZAR INVENTÁRIO"
-RefreshBtn.Font = Enum.Font.GothamBold
-RefreshBtn.TextSize = 12
-RefreshBtn.TextColor3 = Color3.new(1,1,1)
+RefreshBtn.Size             = UDim2.new(1, 0, 1, 0)
+RefreshBtn.Text             = "↺ ATUALIZAR INVENTÁRIO"
+RefreshBtn.Font             = Enum.Font.GothamBold
+RefreshBtn.TextSize         = 12
+RefreshBtn.TextColor3       = Color3.new(1,1,1)
 RefreshBtn.BackgroundColor3 = Color3.fromRGB(30,60,90)
-RefreshBtn.BorderSizePixel = 0
+RefreshBtn.BorderSizePixel  = 0
 Instance.new("UICorner", RefreshBtn).CornerRadius = UDim.new(0, 5)
 
 -- // LISTA SCROLL
 local listRow = NewItem(210)
 listFrame = Instance.new("ScrollingFrame", listRow)
-listFrame.Size = UDim2.new(1, 0, 1, 0)
-listFrame.BackgroundColor3 = Color3.fromRGB(22,22,22)
+listFrame.Size               = UDim2.new(1, 0, 1, 0)
+listFrame.BackgroundColor3   = Color3.fromRGB(22,22,22)
 listFrame.ScrollBarThickness = 4
-listFrame.BorderSizePixel = 0
-listFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+listFrame.BorderSizePixel    = 0
+listFrame.CanvasSize         = UDim2.new(0, 0, 0, 0)
 Instance.new("UICorner", listFrame)
 Instance.new("UIListLayout", listFrame)
 
@@ -242,14 +251,14 @@ local function PopularLista()
 
     if #lista == 0 then
         local av = Instance.new("TextLabel", listFrame)
-        av.Size = UDim2.new(1, 0, 0, 40)
-        av.Text = "Nenhum brainrot encontrado!"
-        av.TextColor3 = Color3.fromRGB(200,80,80)
+        av.Size               = UDim2.new(1, 0, 0, 40)
+        av.Text               = "Nenhum brainrot encontrado!"
+        av.TextColor3         = Color3.fromRGB(200,80,80)
         av.BackgroundTransparency = 1
-        av.Font = Enum.Font.Gotham
-        av.TextSize = 12
-        av.TextWrapped = true
-        listFrame.CanvasSize = UDim2.new(0,0,0,40)
+        av.Font               = Enum.Font.Gotham
+        av.TextSize           = 12
+        av.TextWrapped        = true
+        listFrame.CanvasSize  = UDim2.new(0,0,0,40)
         return
     end
 
@@ -259,51 +268,51 @@ local function PopularLista()
         local chave = dado.nome:lower() .. "|" .. dado.mutacao
 
         local row = Instance.new("Frame", listFrame)
-        row.Size = UDim2.new(1, 0, 0, 36)
+        row.Size             = UDim2.new(1, 0, 0, 36)
         row.BackgroundColor3 = Color3.fromRGB(28,28,28)
-        row.BorderSizePixel = 0
+        row.BorderSizePixel  = 0
         row:SetAttribute("Mutacao", dado.mutacao)
 
         local badge = Instance.new("Frame", row)
-        badge.Size = UDim2.fromOffset(5, 36)
+        badge.Size             = UDim2.fromOffset(5, 36)
         badge.BackgroundColor3 = MutacaoCores[dado.mutacao] or Color3.fromRGB(100,100,100)
-        badge.BorderSizePixel = 0
+        badge.BorderSizePixel  = 0
 
         local lblN = Instance.new("TextLabel", row)
-        lblN.Size = UDim2.new(0.63, 0, 1, 0)
-        lblN.Position = UDim2.new(0, 9, 0, 0)
-        lblN.Text = dado.nome
-        lblN.Font = Enum.Font.Gotham
-        lblN.TextSize = 13
-        lblN.TextColor3 = Color3.fromRGB(200,200,200)
+        lblN.Size             = UDim2.new(0.63, 0, 1, 0)
+        lblN.Position         = UDim2.new(0, 9, 0, 0)
+        lblN.Text             = dado.nome
+        lblN.Font             = Enum.Font.Gotham
+        lblN.TextSize         = 13
+        lblN.TextColor3       = Color3.fromRGB(200,200,200)
         lblN.BackgroundTransparency = 1
-        lblN.TextXAlignment = Enum.TextXAlignment.Left
-        lblN.TextTruncate = Enum.TextTruncate.AtEnd
+        lblN.TextXAlignment   = Enum.TextXAlignment.Left
+        lblN.TextTruncate     = Enum.TextTruncate.AtEnd
 
         local lblM = Instance.new("TextLabel", row)
-        lblM.Size = UDim2.new(0.33, 0, 1, 0)
-        lblM.Position = UDim2.new(0.66, 0, 0, 0)
-        lblM.Text = dado.mutacao
-        lblM.Font = Enum.Font.GothamBold
-        lblM.TextSize = 11
-        lblM.TextColor3 = MutacaoCores[dado.mutacao] or Color3.fromRGB(150,150,150)
+        lblM.Size             = UDim2.new(0.33, 0, 1, 0)
+        lblM.Position         = UDim2.new(0.66, 0, 0, 0)
+        lblM.Text             = dado.mutacao
+        lblM.Font             = Enum.Font.GothamBold
+        lblM.TextSize         = 11
+        lblM.TextColor3       = MutacaoCores[dado.mutacao] or Color3.fromRGB(150,150,150)
         lblM.BackgroundTransparency = 1
-        lblM.TextXAlignment = Enum.TextXAlignment.Left
+        lblM.TextXAlignment   = Enum.TextXAlignment.Left
 
         local btn = Instance.new("TextButton", row)
-        btn.Size = UDim2.new(1, 0, 1, 0)
+        btn.Size              = UDim2.new(1, 0, 1, 0)
         btn.BackgroundTransparency = 1
-        btn.Text = ""
-        btn.ZIndex = 5
+        btn.Text              = ""
+        btn.ZIndex            = 5
         btn.MouseButton1Click:Connect(function()
             if AlvosSelecionados[chave] then
                 AlvosSelecionados[chave] = nil
                 row.BackgroundColor3 = Color3.fromRGB(28,28,28)
-                lblN.TextColor3 = Color3.fromRGB(200,200,200)
+                lblN.TextColor3      = Color3.fromRGB(200,200,200)
             else
                 AlvosSelecionados[chave] = { nome = dado.nome, mutacao = dado.mutacao }
                 row.BackgroundColor3 = Color3.fromRGB(20,45,30)
-                lblN.TextColor3 = Color3.fromRGB(0,255,127)
+                lblN.TextColor3      = Color3.fromRGB(0,255,127)
             end
             UpdateTitle()
         end)
@@ -335,39 +344,81 @@ UserInputService.InputEnded:Connect(function(i)
     if i.UserInputType == Enum.UserInputType.MouseButton1 then dragging = false end
 end)
 
--- // BUSCA PROMPT
--- O workspace não tem mutação no nome, então busca só pelo nome do brainrot.
--- A mutação já foi filtrada na hora que o usuário selecionou na lista.
+-- // VERIFICAÇÃO DE PROMPT (nome + mutação)
+local function VerificaPrompt(prompt, paiObj)
+    local nomePai    = paiObj.Name
+    local nomeAvo    = paiObj.Parent and paiObj.Parent.Name or ""
+    local textoPrompt = prompt.ObjectText or ""
+    local acaoPrompt  = prompt.ActionText or ""
+    local caminhoFull = prompt:GetFullName() or ""
+
+    local campos = {
+        NormalizarTexto(nomePai):lower(),
+        NormalizarTexto(nomeAvo):lower(),
+        NormalizarTexto(textoPrompt):lower(),
+        NormalizarTexto(acaoPrompt):lower(),
+        NormalizarTexto(caminhoFull):lower(),
+    }
+
+    local camposSemEspaco = {}
+    for _, texto in ipairs(campos) do
+        camposSemEspaco[#camposSemEspaco + 1] = texto:gsub("%s+", "")
+    end
+
+    for _, dado in pairs(AlvosSelecionados) do
+        local nomeBusca       = NormalizarTexto(dado.nome):lower()
+        local nomeBuscaSemEsp = nomeBusca:gsub("%s+", "")
+        local mutBusca        = dado.mutacao:lower()
+        local mutBuscaSemEsp  = mutBusca:gsub("%s+", "")
+
+        local temNome = false
+        local temMut  = false
+
+        for i, texto in ipairs(campos) do
+            local textoSemEsp = camposSemEspaco[i]
+
+            if not temNome then
+                if texto:find(nomeBusca, 1, true) or textoSemEsp:find(nomeBuscaSemEsp, 1, true) then
+                    temNome = true
+                end
+            end
+
+            if not temMut then
+                if texto:find(mutBusca, 1, true) or textoSemEsp:find(mutBuscaSemEsp, 1, true) then
+                    temMut = true
+                end
+            end
+
+            if temNome and temMut then return true end
+        end
+    end
+
+    return false
+end
+
+-- // BUSCA DO PROMPT
 local function FindPromptDoAlvo()
     local folder = workspace:FindFirstChild("Client")
         and workspace.Client:FindFirstChild("Path")
         and workspace.Client.Path:FindFirstChild("Brainrots")
 
-    -- tenta pela pasta dedicada primeiro (mais rápido)
     if folder then
         for _, obj in ipairs(folder:GetChildren()) do
             local hrpObj = obj:FindFirstChild("HumanoidRootPart")
             if not hrpObj then continue end
             local prompt = hrpObj:FindFirstChildOfClass("ProximityPrompt")
             if not prompt then continue end
-            local texto = (prompt.ObjectText or ""):lower()
-            for _, dado in pairs(AlvosSelecionados) do
-                if texto:find(dado.nome:lower(), 1, true) then
-                    return prompt, hrpObj
-                end
+            if VerificaPrompt(prompt, obj) then
+                return prompt, hrpObj
             end
         end
     end
 
-    -- fallback: varre todo o workspace (cobre esteiras, spawns, etc.)
     for _, obj in ipairs(workspace:GetDescendants()) do
         if obj:IsA("ProximityPrompt") then
-            local texto = (obj.ObjectText or ""):lower()
-            for _, dado in pairs(AlvosSelecionados) do
-                if texto:find(dado.nome:lower(), 1, true) then
-                    local part = obj.Parent
-                    return obj, part
-                end
+            local part = obj.Parent
+            if VerificaPrompt(obj, part) then
+                return obj, part
             end
         end
     end
@@ -384,12 +435,11 @@ task.spawn(function()
         local prompt, hrpObj = FindPromptDoAlvo()
         if not prompt then continue end
 
-        local char = LocalPlayer.Character
+        local char      = LocalPlayer.Character
         local hrpPlayer = char and char:FindFirstChild("HumanoidRootPart")
         if not hrpPlayer then continue end
 
         pcall(function()
-            -- teleporta ao lado do brainrot dentro do range do prompt
             hrpPlayer.CFrame = hrpObj.CFrame * CFrame.new(0, 0, 3)
             task.wait(0.1)
             prompt.HoldDuration = 0
